@@ -11,7 +11,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # 화면 타이틀 설정
 pygame.display.set_caption("적을 피해 움직여라!") 
 
-# FPS : 초당 프레임 수 (프레임 수가 높으면 부드러움, 낮으면 끊기거나 덜 부드러움)
+# FPS
 clock = pygame.time.Clock()
 
 # 배경 이미지 불러오기
@@ -37,14 +37,23 @@ enemy = pygame.image.load("C:\\Pygame_basic\\pygame_basic\\enemy.png")
 enemy_size = enemy.get_rect().size 
 enemy_width = enemy_size[0] 
 enemy_height = enemy_size[1]
-enemy_x_pos = (screen_width / 2) - (enemy_width / 2) # 적 시작 지점을 화면 가로 중앙에
-enemy_y_pos = (screen_height / 2) - (enemy_height / 2) # 적 시작 지점 세로 중앙
+enemy_x_pos = (screen_width / 2) - (enemy_width / 2) 
+enemy_y_pos = (screen_height / 2) - (enemy_height / 2) 
  
+# 폰트 정의
+game_font = pygame.font.Font(None, 40) # 폰트 객체 생성(폰트, 크기) None : 디폴트값 적용됨
+
+# 총 시간
+total_time = 10 # 10초로 가정
+
+# 시작 시간 정보 
+start_ticks = pygame.time.get_ticks() # 현재 tick 정보를 받아옴
+
 # 이벤트 루프
 running = True 
 while running: 
+
     dt = clock.tick(60)
-    print("fps : " + str(clock.get_fps())) 
 
     for event in pygame.event.get():  
         if event.type == pygame.QUIT: 
@@ -90,9 +99,9 @@ while running:
 # 충돌 처리
     # 실제로 화면상 위치하고 있는 캐릭터의 rect정보를 업데이트 되는 것
     # 충돌 처리를 위한 rect 정보 업데이트
-    character_rect = character.get_rect() # character_rect 변수에 캐릭터가 가지는 rect 정보를 가져옴 : 좌표, 가로 세로 정보
-    character_rect.left = character_x_pos # 이미지 왼쪽
-    character_rect.top = character_y_pos # # 이미지 위쪽
+    character_rect = character.get_rect() 
+    character_rect.left = character_x_pos 
+    character_rect.top = character_y_pos 
 
 # 적 캐릭터도 똑같이 충돌 처리
     enemy_rect = enemy.get_rect()
@@ -100,17 +109,36 @@ while running:
     enemy_rect.top = enemy_y_pos
 
 # 충돌 체크
-    if character_rect.colliderect(enemy_rect): # colliderect : 사각형 기준으로 충돌이 있었는지
+    if character_rect.colliderect(enemy_rect): 
         print("충돌했습니다.")
-        running = False # 게임 종료 됨
+        running = False 
 
 
 # blit : 좌표 설정 (맨왼쪽, 맨위쪽 기준임)
     screen.blit(background, (0,0))
     screen.blit(character, (character_x_pos, character_y_pos)) 
-    screen.blit(enemy, (enemy_x_pos, enemy_y_pos)) # 적 캐릭터 그리기
+    screen.blit(enemy, (enemy_x_pos, enemy_y_pos)) 
+
+# 타이머 집어 넣기
+# 경과 시간 계산 elapsed_time : 지금까지 흘러간 시간 정보
+#  흘러간 시간 = 현재 틱 정보 - 시작 틱
+    elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000 # 1000으로 나눠서 초 단위로 표시
+
+    # render 뒤에 들어가는 것은 시간(출력할 글자), True, 글자 색상
+    timer = game_font.render(str(int(total_time - elapsed_time)), True, (255,255,255)) # 10 9 8 7 6 이런식으로 흘러가게
+    
+# 스크린에 표시되는 함수와 좌표 정보
+    screen.blit(timer, (10,10))
+
+# 만약 시간이 흘러가다 0 이하가 되면 게임 종료(-1 로 넘어가지않게)
+    if total_time - elapsed_time <= 0:
+        print("타임 아웃")
+        running = False
 
     pygame.display.update()
+
+# 종료 되기 직전에 잠시 대기 (바로 꺼지지 않게)
+pygame.time.delay(2000) # 2초정도 대기 (ms)
 
 # pygame 종료
 pygame.quit()
